@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier un commentaire | Fake Store{% endblock %}
+
+{% block body %}
+    <main class="container py-5">
+        <div class="mx-auto edit-comment-container">
+            <a class="btn btn-link px-0 mb-4 text-decoration-none fw-semibold" href="{{ path('app_product_show', {id: product.id}) }}#comments">← Retour au produit</a>
+
+            <section class="card border-0 shadow-sm">
+                <div class="card-body p-4 p-md-5">
+                    <p class="text-primary text-uppercase fw-bold small mb-2">{{ product.title }}</p>
+                    <h1 class="h2 mb-4">Modifier le commentaire</h1>
+
+                    {{ form_start(form, {attr: {'data-loading-form': ''}}) }}
+                        {{ form_errors(form) }}
+                        {{ form_row(form.author) }}
+                        {{ form_row(form.content) }}
+                        <button class="btn btn-primary" type="submit" data-loading-text="Enregistrement…">
+                            <span class="spinner-border spinner-border-sm d-none" data-loading-spinner aria-hidden="true"></span>
+                            <span data-loading-label>Enregistrer les modifications</span>
+                        </button>
+                    {{ form_end(form) }}
+                </div>
+            </section>
+        </div>
+    </main>
+{% endblock %}

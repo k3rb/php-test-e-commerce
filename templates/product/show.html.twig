@@ -1,0 +1,92 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ product ? product.title : 'Produit indisponible' }} | Fake Store{% endblock %}
+
+{% block body %}
+    <main class="container py-5">
+        <a class="btn btn-link px-0 mb-4 text-decoration-none fw-semibold" href="{{ path('app_product_list') }}">← Retour au catalogue</a>
+
+        {% if error %}
+            <div class="alert alert-danger" role="alert">{{ error }}</div>
+        {% else %}
+            <article class="card border-0 shadow-sm overflow-hidden">
+                <div class="row g-0">
+                    <div class="col-lg-6 product-detail__image d-flex align-items-center justify-content-center p-4 p-lg-5 bg-white">
+                        <img class="img-fluid" src="{{ product.image }}" alt="{{ product.title }}">
+                    </div>
+
+                    <div class="col-lg-6 d-flex align-items-center p-4 p-lg-5 bg-body-secondary product-detail__content">
+                        <div>
+                            <p class="text-primary text-uppercase fw-bold small mb-2">{{ product.category }}</p>
+                            <h1 class="display-5 fw-bold">{{ product.title }}</h1>
+                            <p class="display-6 text-primary fw-bold my-4">{{ product.price|number_format(2, ',', ' ') }} €</p>
+                            <p class="lead text-body-secondary lh-lg mb-0">{{ product.description }}</p>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <section class="comments pt-5" id="comments">
+                <div class="mb-4">
+                    <p class="text-primary text-uppercase fw-bold small mb-2">Avis clients</p>
+                    <h2 class="fw-bold mb-0">Commentaires ({{ comments|length }})</h2>
+                </div>
+
+                {% for message in app.flashes('success') %}
+                    <div class="alert alert-success" role="status">{{ message }}</div>
+                {% endfor %}
+                {% for message in app.flashes('error') %}
+                    <div class="alert alert-danger" role="alert">{{ message }}</div>
+                {% endfor %}
+
+                {% if commentError %}
+                    <div class="alert alert-danger" role="alert">{{ commentError }}</div>
+                {% else %}
+                    <div class="row g-4 align-items-start">
+                        <div class="col-lg-7 d-grid gap-3">
+                            {% for comment in comments %}
+                                <article class="card border-0 shadow-sm">
+                                    <div class="card-body p-4">
+                                        <div class="d-flex gap-3 align-items-baseline justify-content-between mb-3">
+                                            <strong>{{ comment.author }}</strong>
+                                            <time class="text-body-secondary small" datetime="{{ comment.createdAt|date('c') }}">
+                                                {{ comment.createdAt|date('d/m/Y à H:i') }}
+                                            </time>
+                                        </div>
+                                        <p class="card-text lh-lg">{{ comment.content|nl2br }}</p>
+                                        <div class="d-flex gap-2 align-items-center">
+                                            <a class="btn btn-outline-primary btn-sm" href="{{ path('app_comment_edit', {id: comment.id}) }}">Modifier</a>
+                                            <form class="m-0" method="post" action="{{ path('app_comment_delete', {id: comment.id}) }}" onsubmit="return confirm('Supprimer ce commentaire ?');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete-comment-' ~ comment.id) }}">
+                                                <button class="btn btn-outline-danger btn-sm" type="submit">Supprimer</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </article>
+                            {% else %}
+                                <div class="alert alert-secondary text-center mb-0">Aucun commentaire pour ce produit.</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-lg-5">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body p-4">
+                                    <h3 class="h4 mb-4">Ajouter un commentaire</h3>
+                                    {{ form_start(commentForm, {attr: {'data-loading-form': ''}}) }}
+                                        {{ form_errors(commentForm) }}
+                                        {{ form_row(commentForm.author) }}
+                                        {{ form_row(commentForm.content) }}
+                                        <button class="btn btn-primary" type="submit" data-loading-text="Publication…">
+                                            <span class="spinner-border spinner-border-sm d-none" data-loading-spinner aria-hidden="true"></span>
+                                            <span data-loading-label>Publier</span>
+                                        </button>
+                                    {{ form_end(commentForm) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </section>
+        {% endif %}
+    </main>
+{% endblock %}

@@ -1,0 +1,22 @@
+# see https://symfony.com/doc/current/reference/configuration/framework.html
+framework:
+    secret: '%env(APP_SECRET)%'
+
+    http_client:
+        scoped_clients:
+            fake_store.client:
+                base_uri: '%env(FAKE_STORE_API_BASE_URL)%'
+                timeout: 5
+                max_duration: 10
+
+    # Note that the session will be started ONLY if you read or write from it.
+    session: true
+
+    #esi: true
+    #fragments: true
+
+when@test:
+    framework:
+        test: true
+        session:
+            storage_factory_id: session.storage.factory.mock_file

@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Produits | Fake Store{% endblock %}
+
+{% block body %}
+    <main class="container py-5">
+        <header class="mb-5">
+            <p class="text-primary text-uppercase fw-bold small mb-2">Fake Store API</p>
+            <h1 class="display-4 fw-bold mb-0">Catalogue de produits</h1>
+        </header>
+
+        {% if error %}
+            <div class="alert alert-danger" role="alert">{{ error }}</div>
+        {% else %}
+            <section class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4" aria-label="Liste des produits">
+                {% for product in products %}
+                    <div class="col">
+                        <article class="card product-card h-100 shadow-sm">
+                            <a class="text-decoration-none text-body h-100 d-flex flex-column" href="{{ path('app_product_show', {id: product.id}) }}">
+                                <div class="product-card__image d-flex align-items-center justify-content-center p-4">
+                                    <img class="img-fluid" src="{{ product.image }}" alt="{{ product.title }}" loading="lazy">
+                                </div>
+                                <div class="card-body d-flex flex-column border-top">
+                                    <p class="text-primary text-uppercase fw-bold small mb-2">{{ product.category }}</p>
+                                    <h2 class="card-title h5 flex-grow-1">{{ product.title }}</h2>
+                                    <p class="h4 text-primary fw-bold mb-0 mt-3">{{ product.price|number_format(2, ',', ' ') }} €</p>
+                                </div>
+                            </a>
+                        </article>
+                    </div>
+                {% else %}
+                    <div class="col-12">
+                        <div class="alert alert-secondary">Aucun produit n’est disponible.</div>
+                    </div>
+                {% endfor %}
+            </section>
+        {% endif %}
+    </main>
+{% endblock %}

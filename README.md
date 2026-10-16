@@ -1,95 +1,75 @@
-# php-test-e-commerce
+# Test technique Blissim — PHP / Symfony
 
-Test technique pour un poste de développeur back-end PHP / Symfony.
+Ce dépôt contient les deux parties du test technique :
 
-## État du projet
-
-- Exercice 1 : modèle SQL, données de test et requêtes dans `blissim.sql`.
-- Exercice 2 : environnement de développement Symfony prêt. Le catalogue et la gestion des commentaires restent à implémenter.
+- une modélisation PostgreSQL dans `blissim.sql` ;
+- une application Symfony affichant les produits de Fake Store API et permettant de gérer leurs commentaires.
 
 ## Prérequis
 
-- Docker et Docker Compose, avec le moteur Docker démarré.
-- Le port local `8085` disponible, ou une autre valeur pour `APP_PORT` dans `.env`.
-
-PHP, Composer et PostgreSQL sont fournis par Docker ; leur installation sur la machine hôte est facultative.
+- Docker avec Docker Compose ;
+- le port `8085` disponible pour l'application ;
+- le port `54322` disponible pour PostgreSQL.
 
 ## Installation et lancement
 
-Depuis la racine du dépôt :
+J'ai fait une commande unique pour lancer le projet.
+
+Après avoir cloné le dépôt, exécuter depuis sa racine :
 
 ```sh
-docker compose build
-docker compose run --rm --no-deps app composer install --no-interaction
-docker compose up -d
+docker compose up --build
 ```
 
-Ouvrir [http://localhost:8085](http://localhost:8085). Une page d'accueil confirme que Symfony fonctionne.
+Le catalogue est ensuite accessible sur [http://localhost:8085](http://localhost:8085).
 
-Le projet utilise Symfony 7.4 LTS, PHP 8.4 avec Apache et PostgreSQL 16. Les versions des dépendances PHP sont fixées dans `composer.lock`.
+Pour lancer les conteneurs en arrière-plan :
 
-Le code est monté dans le conteneur : les modifications locales sont visibles sans reconstruire l'image. Une modification du Dockerfile ou de la configuration Apache/PHP demande un nouveau `docker compose up -d --build`.
+```sh
+docker compose up --build -d
+```
 
-## Base de données et PDO
+Pour arrêter le projet en conservant les données PostgreSQL :
 
-Les paramètres de développement sont définis dans `.env` :
+```sh
+docker compose down
+```
 
-| Paramètre | Valeur par défaut |
+## Configuration PostgreSQL
+
+Les valeurs de développement se trouvent dans `.env` :
+
+| Paramètre | Valeur |
 | --- | --- |
-| Hôte depuis le conteneur PHP | `database` |
-| Port interne | `5432` |
-| Base | `blissim` |
+| Hôte depuis Symfony | `database` |
+| Hôte depuis la machine locale | `127.0.0.1` |
+| Port depuis Symfony | `5432` |
+| Port depuis la machine locale | `54322` |
+| Base de données | `blissim` |
 | Utilisateur | `blissim` |
 | Mot de passe | `blissim_dev` |
 
-Ces identifiants sont destinés à l'environnement local de ce test. Le service PostgreSQL ne publie pas de port sur la machine hôte.
+## Partie SQL
 
-Symfony reçoit `DATABASE_DSN`, `DATABASE_USER` et `DATABASE_PASSWORD` depuis Compose. Le service `PDO` est configuré dans `config/services.yaml`, avec les exceptions activées et les requêtes préparées natives. Il pourra être injecté dans les futurs repositories.
+Le fichier `blissim.sql` contient :
 
-Vérifier la connexion :
+- les tables `products`, `customers`, `orders` et `orders_products` ;
+- un jeu de données de test ;
+- les deux requêtes demandées.
 
-```sh
-docker compose exec app php bin/console app:database:check
-```
+## Partie PHP / Symfony
 
-Ouvrir une console SQL :
+J'ai suivie les directives de l'exercice mais j'ai peut etre sur interprété celle sur les insertions en bdd via PDO.
+J'ai pas utilisé Doctrine du coup et j'ai tout fait en SQL a l'ancienne.
 
-```sh
-docker compose exec database psql -U blissim -d blissim
-```
+Sur le coup ça m'a pas choqué mais une fois le test finit... j'ai eu un gros doute.
 
-Les données persistent dans le volume Docker `database_data`. Les variables `POSTGRES_*` initialisent ce volume à sa première création ; les modifier ensuite ne change pas automatiquement les comptes ou les bases déjà créés.
+Le projet utilise Symfony 7.4 LTS, PHP 8.4, PostgreSQL 16 et Bootstrap 5.3.8.
 
-## Commandes utiles
+## Tests
 
-```sh
-# Informations sur Symfony
-docker compose exec app php bin/console about
-
-# Vérification des configurations et des templates
-docker compose exec app php bin/console lint:container
-docker compose exec app php bin/console lint:yaml config
-docker compose exec app php bin/console lint:twig templates
-
-# Logs et arrêt (les données PostgreSQL sont conservées)
-docker compose logs -f app database
-docker compose down
-
-# Redémarrage après installation
-docker compose up -d
-```
-
-Twig, HttpClient, Form, Validator et la protection CSRF sont installés. Les formulaires Symfony utilisent la protection CSRF avec session.
-
-## Exercice SQL
-
-`blissim.sql` reste indépendant de l'application et n'est pas importé automatiquement dans sa base.
-
-Pour l'exécuter une première fois dans une base séparée :
+Une fois les conteneurs lancés, exécuter :
 
 ```sh
-docker compose exec database createdb -U blissim blissim_sql
-docker compose exec -T database psql -U blissim -d blissim_sql -v ON_ERROR_STOP=1 < blissim.sql
+docker compose exec -T app php bin/phpunit
 ```
-
-Le script crée les tables, insère les données et exécute les deux requêtes demandées. Il doit être lancé sur une base vide ; il ne réinitialise pas des tables existantes.
